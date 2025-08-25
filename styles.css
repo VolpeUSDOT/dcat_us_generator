@@ -236,4 +236,24 @@ label {
     padding: 10px; /* Add some padding */
   }
   
+  details {
+    margin: 0.5em 0;
+    padding: 0.75em;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f9f9f9;
+  }
+
+  details summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+  }
+
+  details[open] {
+    background: #eef6ff;
+    border-color: #88bdf2;
+  }
+
+
   }

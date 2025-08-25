@@ -98,7 +98,7 @@ function validateForm() {
 }
 
 // Generate JSON
-function generateJSON() {
+async function generateJSON() {
     const form = document.getElementById("libraryItemForm");
     const formData = new FormData(form);
     const jsonObject = {};
@@ -115,13 +115,53 @@ function generateJSON() {
         .map(input => input.value.trim())
         .filter(value => value !== "");
 
-    // Files
-    const files = Array.from(document.querySelectorAll('.file-group')).map(group => ({
-        filename: group.querySelector('input[name="filename"]').value.trim(),
-        filedescription: group.querySelector('input[name="filedescription"]').value.trim(),
-        ianamediatype: group.querySelector('input[list="ianamediatype"]').value.trim()
+    // Files from individual file groups
+    const filesFromGroups = Array.from(document.querySelectorAll('.file-group')).map(group => ({
+    filename: group.querySelector('input[name="filename"]').value.trim(),
+    filedescription: group.querySelector('input[name="filedescription"]').value.trim(),
+    ianamediatype: group.querySelector('input[list="ianamediatype"]').value.trim()
     })).filter(file => file.filename || file.filedescription || file.ianamediatype);
-    
+
+    // Files from textarea
+    const rawFileList = document.getElementById("filelist").value
+    .split("\n")
+    .map(f => f.trim())
+    .filter(f => f.length > 0);
+
+    // Load helper JSONs once
+    const [extensionMetadata, fileDefinitions] = await Promise.all([
+    fetch("collections_and_file_types.json").then(r => r.json()),
+    fetch("file_definitions.json").then(r => r.json())
+    ]);
+
+    // Map textarea entries into distribution objects
+    const filesFromText = rawFileList.map(title => {
+    const extension = title.includes(".") ? title.split(".").pop().toLowerCase() : "";
+    return {
+        filename: title,
+        filedescription: fileDefinitions[extension] || "",
+        ianamediatype: extensionMetadata[extension] || "application/octet-stream"
+    };
+    });
+
+    // Combine both sources
+    const files = [...filesFromGroups, ...filesFromText];
+
+    // Build distribution array
+    const distributions = files.map(file => {
+    const extension = file.filename.includes(".") ? file.filename.split(".").pop().toLowerCase() : "";
+    const formatType = extension.toUpperCase();
+
+    return {
+        "@type": "dcat:Distribution",
+        "accessURL": jsonObject.doi,
+        "title": file.filename,
+        "format": formatType,
+        "mediaType": file.ianamediatype,
+        "description": file.filedescription || fileDefinitions[extension] || ""
+    };
+    });
+
 
     // Sub-Organizations
     const subOrgs = Array.from(document.querySelectorAll('input[name="suborg[]"]'))
@@ -164,13 +204,7 @@ function generateJSON() {
                 },
                 "dataQuality": true,
                 "description": jsonObject.description,
-                "distribution": files.map(file => ({
-                    "@type": "dcat:Distribution",
-                    "accessURL": jsonObject.doi,
-                    "title": file.filename,
-                    "description": file.filedescription,
-                    "mediaType": file.ianamediatype
-                })),
+                "distribution": distributions,
                 "format": jsonObject.format,
                 "identifier": jsonObject.doi,
                 "isPartOf": jsonObject.collection,

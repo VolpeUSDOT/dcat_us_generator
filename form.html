@@ -20,7 +20,25 @@
 
     <!--Publisher-->
     <label for="publisher">Publisher:</label><br>
+
+    <details>
+    <summary><strong>Instructions for Publisher field</strong></summary><br><br>
+    <p>
+        For the SMART Grants Program, put 
+        <em>"Strengthening Mobility and Revolutionizing Transportation (SMART) Program"</em>, 
+        then click <strong>"Add Sub-Organization"</strong>.  
+        Then put <em>"Department of Transportation"</em> and add another sub-organization.  
+        Then put <em>"United States Government"</em> in that last box.  
+
+        <br><br>
+        This also applies to the UTC program, but instead of 
+        <em>"Strengthening Mobility and Revolutionizing Transportation (SMART) Program"</em> 
+        in the first box, put <em>"University Transportation Centers Program."</em>
+    </p>
+    </details>
+
     <input type="text" id="publisher" name="publisher" placeholder="Publisher" required>
+
 
     <button type="button" onclick="addSubOrganization()" class="button">Add Sub-Organization</button><br>
     <div id="subOrganizationContainer"></div><br><br>
@@ -38,12 +56,19 @@
 
     <!--File Group-->
     <H3>Files:</H3>
+    <H4>Add each file in your dataset individually or use the text box to add your files all at once.</H4>
     <div id="fileContainer">
-        <button type="button" onclick="addFileGroup()" class="button2">Add File</button><br><br>
+        <button type="button" onclick="addFileGroup()" class="button2">Add Files Individually</button><br><br>
     </div><br><br>
+    <label for="filelist">Paste file names (one per line):</label><br>
+    <textarea id="filelist" name="filelist" rows="10" cols="60"
+     placeholder="example.pdf&#10;report.csv&#10;data/image1.png"></textarea>
+    <br><br>
+
 
     <!--Format-->
     <label for="format">Format:</label><br>
+    <p>Use "ZIP" unless there is only 1 file</p>
     <input list="formats" type="text" name="format" id="format">
     <datalist id="formats">
         <option value="CSV">CSV</option>
@@ -62,6 +87,7 @@
 
     <!--Keywords-->
     <label for="keyword">Keyword or Subject Term:</label><br>
+    <p>Please use terms from the Transportation Research Thesaurus <a href="url">https://trt.trb.org/</a>.</p>
     <div id="keywordContainer" >
         <input type="text" id="keyword[]" placeholder="Enter keyword" name="keyword" required>
     </div>
@@ -85,6 +111,7 @@
 
     <!--License-->
     <label for="license">License/Copyright (Link):</label><br>
+    <p>Use the same license you describe in your Data Management Plan if you have one</p>
     <input list="licenses" type="text" name="license" id="license">
     <datalist id="licenses" required>
         <option value="https://www.apache.org/licenses/LICENSE-2.0">Apache License</option>
@@ -117,6 +144,7 @@
     <input type="date" id="issued" name="issued" required><br><br>
 
     <label for="modified">Most recent date the item was changed/modified:</label><br>
+    <p>Use today's date or the publicationn date, whichever is most recent</p>
     <input type="date" id="modified" name="modified" required><br><br>
 
     <!--References-->
@@ -125,6 +153,7 @@
 
     <!--Spatial-->
     <label for="spatial">Spatial (The range of spatial applicability of a dataset. Could include a spacial region like a bounding box or a named place):</label><br>
+    <p>For more information on how to add more precise spatial information such as bounding box, read the documentation here: <a href="url">https://resources.data.gov/resources/dcat-us/#spatial</a></p>
     <input type="text" id="spatial" name="spatial" list="US"><br><br>
     <datalist id="US" required>
         <option>United States</option>
@@ -227,8 +256,9 @@
         <option value="https://doi.org/10.21949/nsh6-b216">Safety Compass Newsletter (https://doi.org/10.21949/nsh6-b216)</option>
         <option value="https://doi.org/10.21949/1530850">Secretary of Transportation Speeches (https://doi.org/10.21949/1530850)</option>
         <option value="https://doi.org/10.21949/ssbv-9r29">Special Issue - Weekly Motor Fuel Report (https://doi.org/10.21949/ssbv-9r29)</option>
-        <option value="https://doi.org/10.21949/zv5p-jf66">Successes in Stewardship Newsletter (https://doi.org/10.21949/zv5p-jf66)</option>
         <option value="https://doi.org/10.21949/1530851">State Road Maps (https://doi.org/10.21949/1530851)</option>
+        <option value="https://doi.org/10.21949/xp59-gc26">SMART Program (https://doi.org/10.21949/xp59-gc26)</option>
+        <option value="https://doi.org/10.21949/zv5p-jf66">Successes in Stewardship Newsletter (https://doi.org/10.21949/zv5p-jf66)</option>
         <option value="https://doi.org/10.21949/2rwc-j622">Texas Road Maps (https://doi.org/10.21949/2rwc-j622)</option>
         <option value="https://doi.org/10.21949/1530852">Transportation Librarians Roundtable (https://doi.org/10.21949/1530852)</option>
         <option value="https://doi.org/10.21949/1530853">United States Federal Motor Carrier Safety Administration (https://doi.org/10.21949/1530853)</option>
