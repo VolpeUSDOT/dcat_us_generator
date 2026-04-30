@@ -11,6 +11,15 @@
   <h1>DCAT-US Version 1.1 JSON Generator</h1>
   <h3><a href="https://github.com/ptvrdy/dcat_us_v1.1_generator" target="_blank">DCAT-US Generator Project on GitHub</a></h3><br>
   <form id="libraryItemForm">
+    <!--Metadata Version-->
+    <label for="metadataVersion">Metadata Standard Version:</label><br>
+    <p>Select DCAT-US version for generated output JSON.</p>
+    <input type="text" list="metadataVersions" name="metadataversion" id="metadataVersion" value="1.1" required>
+    <datalist id="metadataVersions">
+        <option value="1.1">DCAT-US 1.1</option>
+        <option value="3.0">DCAT-US 3.0</option>
+    </datalist><br><br>
+
     <!--Title and Description-->
     <label for="title">Title:</label><br>
     <input type="text" id="title" name="title" placeholder="Title" required><br><br>

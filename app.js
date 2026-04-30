@@ -81,113 +81,122 @@ function removeField(element) {
     element.parentElement.remove();
 }
 
-
-function validateForm() {
-    var x = document.forms["libraryItemForm"]["fedorapid"].value;
-    if (x) {
-        document.forms["libraryItemForm"]["fedorapid"].value = "null";
-    }
-    else {
-        document.forms["libraryItemForm"]["fedorapid"].value = "https://rosap.ntl.bts.gov/fedora/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:dot.stacks:" + x;
-    }
-    generateJSON()
-
-    // Scroll to the download link after generating JSON
-    const link = document.getElementById("downloadLink");
-    link.scrollIntoView({ behavior: 'smooth', block: 'end' });
-}
-
-// Generate JSON
-async function generateJSON() {
-    const form = document.getElementById("libraryItemForm");
-    const formData = new FormData(form);
+function sanitizeFormData(formData) {
     const jsonObject = {};
-
-    // Basic fields
     formData.forEach((value, key) => {
-        if (value.trim() !== "") {
-            jsonObject[key] = value;
+        if (typeof value === "string" && value.trim() !== "") {
+            jsonObject[key] = value.trim();
         }
     });
+    return jsonObject;
+}
 
-    // Keywords
-    const keywords = Array.from(document.querySelectorAll('input[name="keyword[]"]'))
+function collectKeywords() {
+    return Array.from(document.querySelectorAll('input[name="keyword[]"], input[name="keyword"]'))
         .map(input => input.value.trim())
         .filter(value => value !== "");
+}
 
-    // Files from individual file groups
-    const filesFromGroups = Array.from(document.querySelectorAll('.file-group')).map(group => ({
-    filename: group.querySelector('input[name="filename"]').value.trim(),
-    filedescription: group.querySelector('input[name="filedescription"]').value.trim(),
-    ianamediatype: group.querySelector('input[list="ianamediatype"]').value.trim()
+function collectFileGroups() {
+    return Array.from(document.querySelectorAll('.file-group')).map(group => ({
+        filename: group.querySelector('input[name="filename"]')?.value.trim() || "",
+        filedescription: group.querySelector('input[name="filedescription"]')?.value.trim() || "",
+        ianamediatype: group.querySelector('input[list="ianamediatype"]')?.value.trim() || ""
     })).filter(file => file.filename || file.filedescription || file.ianamediatype);
+}
 
-    // Files from textarea
-    const rawFileList = document.getElementById("filelist").value
-    .split("\n")
-    .map(f => f.trim())
-    .filter(f => f.length > 0);
+function collectFilesFromTextarea() {
+    return (document.getElementById("filelist")?.value || "")
+        .split("\n")
+        .map(f => f.trim())
+        .filter(f => f.length > 0);
+}
 
-    // Load helper JSONs once
-    const [extensionMetadata, fileDefinitions] = await Promise.all([
-    fetch("collections_and_file_types.json").then(r => r.json()),
-    fetch("file_definitions.json").then(r => r.json())
-    ]);
-
-    // Map textarea entries into distribution objects
-    const filesFromText = rawFileList.map(title => {
-    const extension = title.includes(".") ? title.split(".").pop().toLowerCase() : "";
-    return {
-        filename: title,
-        filedescription: fileDefinitions[extension] || "",
-        ianamediatype: extensionMetadata[extension] || "application/octet-stream"
-    };
-    });
-
-    // Combine both sources
-    const files = [...filesFromGroups, ...filesFromText];
-
-    // Build distribution array
-    const distributions = files.map(file => {
-    const extension = file.filename.includes(".") ? file.filename.split(".").pop().toLowerCase() : "";
-    const formatType = extension.toUpperCase();
-
-    return {
-        "@type": "dcat:Distribution",
-        "accessURL": jsonObject.doi,
-        "title": file.filename,
-        "format": formatType,
-        "mediaType": file.ianamediatype,
-        "description": file.filedescription || fileDefinitions[extension] || ""
-    };
-    });
-
-
-    // Sub-Organizations
-    const subOrgs = Array.from(document.querySelectorAll('input[name="suborg[]"]'))
+function collectSubOrganizations() {
+    return Array.from(document.querySelectorAll('input[name="suborg[]"]'))
         .map(input => input.value.trim())
         .filter(value => value !== "");
+}
 
-    let subOrgHierarchy = null
-    // Create nested subOrganizationOf structure
-    if (subOrgs.length != 0) {
-        subOrgHierarchy = createSubOrgHierarchy(subOrgs, 0);
-    }
+function buildDistributions(files, doi, fileDefinitions) {
+    return files.map(file => {
+        const extension = file.filename.includes(".") ? file.filename.split(".").pop().toLowerCase() : "";
+        const formatType = extension.toUpperCase();
 
-    // Construct Bureau Code
+        return {
+            "@type": "dcat:Distribution",
+            "accessURL": doi,
+            "title": file.filename,
+            "format": formatType,
+            "mediaType": file.ianamediatype,
+            "description": file.filedescription || fileDefinitions[extension] || ""
+        };
+    });
+}
+
+function buildCanonicalModel(jsonObject, keywords, distributions, subOrgHierarchy) {
     const bureauCode = document.querySelector('#bureaucode')?.value || null;
-
-    // Construct Program Code
     const programCode = document.querySelector('#programcode')?.value || null;
-
-    // Construct Language
     const language = document.querySelector('#language')?.value || null;
-
-    // Construct References
     const references = document.querySelector('#references')?.value || null;
 
-    // Create JSON object following DCAT-US schema
-    const jsonData = {
+    return {
+        metadataVersion: jsonObject.metadataversion || "1.1",
+        title: jsonObject.title || "",
+        description: jsonObject.description || "",
+        accessLevel: jsonObject.publicaccesslevel || null,
+        bureauCode: bureauCode ? [bureauCode] : null,
+        contactPointFn: jsonObject.contactpointfn || null,
+        contactPointEmail: jsonObject.contactpointemail || null,
+        distributions,
+        format: jsonObject.format || null,
+        identifier: jsonObject.doi || null,
+        isPartOf: jsonObject.collection || jsonObject.rosapcollection || null,
+        issued: jsonObject.issued || null,
+        keyword: keywords,
+        landingPage: jsonObject.doi || null,
+        language: language ? [language] : null,
+        license: jsonObject.license || null,
+        modified: jsonObject.modified || null,
+        policyStatement: jsonObject.policystatement || null,
+        policyURL: jsonObject.policyurl || null,
+        programCode: programCode ? [programCode] : null,
+        publisherName: jsonObject.publisher || null,
+        subOrgHierarchy,
+        references: references ? [references] : null,
+        rights: jsonObject.rights || jsonObject.rightsstatement || null,
+        spatial: jsonObject.spatial || null,
+        webService: jsonObject.fedorapid || null,
+        dataQuality: true
+    };
+}
+
+function stripNulls(value) {
+    if (Array.isArray(value)) {
+        const cleaned = value
+            .map(stripNulls)
+            .filter(v => v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0));
+        return cleaned;
+    }
+
+    if (value && typeof value === "object") {
+        const cleanedObject = {};
+        Object.entries(value).forEach(([key, val]) => {
+            const cleanedValue = stripNulls(val);
+            if (cleanedValue !== null && cleanedValue !== undefined && cleanedValue !== "") {
+                if (!(Array.isArray(cleanedValue) && cleanedValue.length === 0)) {
+                    cleanedObject[key] = cleanedValue;
+                }
+            }
+        });
+        return cleanedObject;
+    }
+
+    return value;
+}
+
+function serializeDcatUs11(model) {
+    const output = {
         "$schema": "https://resources.data.gov/schemas/dcat-us/v1.1/schema/catalog.json",
         "conformsTo": "https://project-open-data.cio.gov/v1.1/schema",
         "@type": "dcat:Catalog",
@@ -195,48 +204,195 @@ async function generateJSON() {
         "dataset": [
             {
                 "@type": "dcat:Dataset",
-                "accessLevel": jsonObject.publicaccesslevel,
-                "bureauCode": bureauCode ? [bureauCode] : null,  // Ensure it's an array
+                "accessLevel": model.accessLevel,
+                "bureauCode": model.bureauCode,
                 "contactPoint": {
-                    "fn": jsonObject.contactpointfn,
-                    "hasEmail": "mailto:" + jsonObject.contactpointemail,
+                    "fn": model.contactPointFn,
+                    "hasEmail": model.contactPointEmail ? "mailto:" + model.contactPointEmail : null,
                     "@type": "vcard:Contact"
                 },
-                "dataQuality": true,
-                "description": jsonObject.description,
-                "distribution": distributions,
-                "format": jsonObject.format,
-                "identifier": jsonObject.doi,
-                "isPartOf": jsonObject.collection,
-                "issued": jsonObject.issued,
-                "keyword": keywords,
-                "landingPage": jsonObject.doi,
-                "language": language ? [language] : null, // Ensure it's an array
-                "license": jsonObject.license,
-                "modified": jsonObject.modified,
-                "policyStatement": jsonObject.policystatement,
-                "policyURL": jsonObject.policyurl,
-                "programCode": programCode ? [programCode] : null,  // Ensure it's an array
+                "dataQuality": model.dataQuality,
+                "description": model.description,
+                "distribution": model.distributions,
+                "format": model.format,
+                "identifier": model.identifier,
+                "isPartOf": model.isPartOf,
+                "issued": model.issued,
+                "keyword": model.keyword,
+                "landingPage": model.landingPage,
+                "language": model.language,
+                "license": model.license,
+                "modified": model.modified,
+                "policyStatement": model.policyStatement,
+                "policyURL": model.policyURL,
+                "programCode": model.programCode,
                 "publisher": {
                     "@type": "org:Organization",
-                    "name": jsonObject.publisher,
-                    ...(subOrgHierarchy && {"subOrganizationOf": subOrgHierarchy})
+                    "name": model.publisherName,
+                    ...(model.subOrgHierarchy && { "subOrganizationOf": model.subOrgHierarchy })
                 },
-                "references": references ? [references] : null,  // Ensure it's an array
-                "rights": jsonObject.rights,
-                "spatial": jsonObject.spatial,
-                "title": jsonObject.title,
-                "webService": jsonObject.fedorapid
+                "references": model.references,
+                "rights": model.rights,
+                "spatial": model.spatial,
+                "title": model.title,
+                "webService": model.webService
             }
         ]
     };
 
-    // Convert JSON object to a string and create Blob for download
-const jsonString = JSON.stringify(jsonData, null, 2);
-const blob = new Blob([jsonString], { type: "application/json" });
-const link = document.getElementById("downloadLink");
-link.href = URL.createObjectURL(blob);
-link.download = `${jsonObject.title}.json`;
-link.style.display = 'block';
-link.textContent = "Download your JSON file";
+    return stripNulls(output);
+}
+
+function serializeDcatUs3(model) {
+    // Provisional serializer profile for transition period.
+    // Uses DCAT-US 3 schema/context references with current field mappings.
+    const output = {
+        "$schema": "https://resources.data.gov/schemas/dcat-us/v3.0/schema/catalog.json",
+        "conformsTo": "https://resources.data.gov/resources/dcat-us3/",
+        "@type": "dcat:Catalog",
+        "@context": "https://resources.data.gov/schemas/dcat-us/v3.0/schema/catalog.jsonld",
+        "dataset": [
+            {
+                "@type": "dcat:Dataset",
+                "accessLevel": model.accessLevel,
+                "bureauCode": model.bureauCode,
+                "contactPoint": {
+                    "fn": model.contactPointFn,
+                    "hasEmail": model.contactPointEmail ? "mailto:" + model.contactPointEmail : null,
+                    "@type": "vcard:Contact"
+                },
+                "description": model.description,
+                "distribution": model.distributions,
+                "identifier": model.identifier,
+                "isPartOf": model.isPartOf,
+                "issued": model.issued,
+                "keyword": model.keyword,
+                "landingPage": model.landingPage,
+                "language": model.language,
+                "license": model.license,
+                "modified": model.modified,
+                "programCode": model.programCode,
+                "publisher": {
+                    "@type": "org:Organization",
+                    "name": model.publisherName,
+                    ...(model.subOrgHierarchy && { "subOrganizationOf": model.subOrgHierarchy })
+                },
+                "references": model.references,
+                "rights": model.rights,
+                "spatial": model.spatial,
+                "title": model.title,
+                "webService": model.webService
+            }
+        ]
+    };
+
+    return stripNulls(output);
+}
+
+function validateByProfile(model) {
+    const errors = [];
+
+    if (!model.title) errors.push("Title is required.");
+    if (!model.description) errors.push("Description is required.");
+
+    if (model.metadataVersion === "3.0") {
+        if (!model.identifier) errors.push("Identifier is required for DCAT-US 3.");
+    }
+
+    if (!model.metadataVersion || (model.metadataVersion !== "1.1" && model.metadataVersion !== "3.0")) {
+        errors.push("Metadata version must be 1.1 or 3.0.");
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+}
+
+function serializeByProfile(model) {
+    const version = model.metadataVersion;
+    if (version === "3.0") {
+        return serializeDcatUs3(model);
+    }
+    return serializeDcatUs11(model);
+}
+
+function validateForm() {
+    const fedoraInput = document.forms["libraryItemForm"]["fedorapid"];
+    const x = fedoraInput.value.trim();
+
+    if (x) {
+        fedoraInput.value = "https://rosap.ntl.bts.gov/fedora/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:dot.stacks:" + x;
+    } else {
+        fedoraInput.value = "";
+    }
+
+    generateJSON();
+
+    // Scroll to the download link after generating JSON
+    const link = document.getElementById("downloadLink");
+    link.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+// Generate JSON
+async function collectFormData() {
+    const form = document.getElementById("libraryItemForm");
+    const formData = new FormData(form);
+    const jsonObject = sanitizeFormData(formData);
+
+    const keywords = collectKeywords();
+    const filesFromGroups = collectFileGroups();
+    const rawFileList = collectFilesFromTextarea();
+
+    const [extensionMetadata, fileDefinitions] = await Promise.all([
+        fetch("collections_and_file_types.json").then(r => r.json()),
+        fetch("file_definitions.json").then(r => r.json())
+    ]);
+
+    const filesFromText = rawFileList.map(title => {
+        const extension = title.includes(".") ? title.split(".").pop().toLowerCase() : "";
+        return {
+            filename: title,
+            filedescription: fileDefinitions[extension] || "",
+            ianamediatype: extensionMetadata[extension] || "application/octet-stream"
+        };
+    });
+
+    const files = [...filesFromGroups, ...filesFromText];
+    const distributions = buildDistributions(files, jsonObject.doi, fileDefinitions);
+
+    const subOrgs = collectSubOrganizations();
+    let subOrgHierarchy = null;
+    if (subOrgs.length !== 0) {
+        subOrgHierarchy = createSubOrgHierarchy(subOrgs, 0);
+    }
+
+    return {
+        jsonObject,
+        keywords,
+        distributions,
+        subOrgHierarchy
+    };
+}
+
+// Generate JSON
+async function generateJSON() {
+    const { jsonObject, keywords, distributions, subOrgHierarchy } = await collectFormData();
+    const canonicalModel = buildCanonicalModel(jsonObject, keywords, distributions, subOrgHierarchy);
+
+    const validation = validateByProfile(canonicalModel);
+    if (!validation.isValid) {
+        alert(validation.errors.join("\n"));
+        return;
+    }
+
+    const jsonData = serializeByProfile(canonicalModel);
+
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const link = document.getElementById("downloadLink");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${canonicalModel.title || "dcat-us-metadata"}.json`;
+    link.style.display = 'block';
+    link.textContent = "Download your JSON file";
 }
