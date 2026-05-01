@@ -4,6 +4,25 @@ label {
     margin-right: 10px;
   }
   
+  .field-hint {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.85em;
+    color: #2f506d;
+  }
+  
+  .profile-section {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #88bdf2;
+    border-radius: 8px;
+    background: #eef6ff;
+  }
+  
+  .profile-section[hidden] {
+    display: none;
+  }
+  
   input, textarea {
     margin-bottom: 10px;
     width: 100%;

@@ -81,6 +81,227 @@ function removeField(element) {
     element.parentElement.remove();
 }
 
+function normalizeString(value) {
+    if (typeof value !== "string") {
+        return null;
+    }
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+}
+
+function normalizeEmail(value) {
+    const normalized = normalizeString(value);
+    return normalized ? normalized.toLowerCase() : null;
+}
+
+function normalizeAccessLevel(value) {
+    const normalized = normalizeString(value);
+    return normalized ? normalized.toLowerCase() : null;
+}
+
+function normalizeFormat(value) {
+    const normalized = normalizeString(value);
+    return normalized ? normalized.toUpperCase() : null;
+}
+
+function normalizeMetadataVersion(value) {
+    return normalizeString(value) || "1.1";
+}
+
+function normalizeDate(value) {
+    const normalized = normalizeString(value);
+    if (!normalized) {
+        return null;
+    }
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) {
+        return normalized;
+    }
+    return parsed.toISOString().split("T")[0];
+}
+
+function normalizeThemeList(themeInput) {
+    if (themeInput === undefined || themeInput === null) {
+        return [];
+    }
+    const values = Array.isArray(themeInput) ? themeInput : [themeInput];
+    const seen = new Set();
+    const result = [];
+    values.forEach(value => {
+        if (typeof value !== "string") {
+            return;
+        }
+        value.split(/[,\n\r]+/)
+            .map(segment => normalizeString(segment))
+            .filter(Boolean)
+            .forEach(normalized => {
+                const key = normalized.toLowerCase();
+                if (seen.has(key)) {
+                    return;
+                }
+                seen.add(key);
+                result.push(normalized);
+            });
+    });
+    return result;
+}
+
+function normalizeKeywords(keywords = []) {
+    const seen = new Set();
+    const result = [];
+    keywords.forEach(keyword => {
+        const normalized = normalizeString(keyword);
+        if (!normalized) {
+            return;
+        }
+        const key = normalized.toLowerCase();
+        if (seen.has(key)) {
+            return;
+        }
+        seen.add(key);
+        result.push(normalized);
+    });
+    return result;
+}
+
+function normalizeCodeList(codeInput) {
+    const values = Array.isArray(codeInput) ? codeInput : [codeInput];
+    const seen = new Set();
+    const result = [];
+    values.forEach(value => {
+        if (typeof value !== "string") {
+            return;
+        }
+        value.split(/[,;\n\r]+/)
+            .map(segment => normalizeString(segment))
+            .filter(Boolean)
+            .forEach(normalized => {
+                const key = normalized.toUpperCase();
+                if (seen.has(key)) {
+                    return;
+                }
+                seen.add(key);
+                result.push(normalized);
+            });
+    });
+    return result;
+}
+
+function normalizeLanguageList(languageInput) {
+    const values = Array.isArray(languageInput) ? languageInput : [languageInput];
+    const seen = new Set();
+    const result = [];
+    values.forEach(value => {
+        if (typeof value !== "string") {
+            return;
+        }
+        value.split(/[,;\n\r]+/)
+            .map(segment => normalizeString(segment))
+            .filter(Boolean)
+            .forEach(normalized => {
+                const key = normalized.toLowerCase();
+                if (seen.has(key)) {
+                    return;
+                }
+                seen.add(key);
+                result.push(normalized.toLowerCase());
+            });
+    });
+    return result;
+}
+
+function normalizeReferenceList(referenceInput) {
+    const values = Array.isArray(referenceInput) ? referenceInput : [referenceInput];
+    const seen = new Set();
+    const result = [];
+    values.forEach(value => {
+        if (typeof value !== "string") {
+            return;
+        }
+        value.split(/[\n\r]+/)
+            .map(segment => normalizeString(segment))
+            .filter(Boolean)
+            .forEach(normalized => {
+                const key = normalized.toLowerCase();
+                if (seen.has(key)) {
+                    return;
+                }
+                seen.add(key);
+                result.push(normalized);
+            });
+    });
+    return result;
+}
+
+function normalizeSubOrganizations(subOrganizations = []) {
+    const seen = new Set();
+    const result = [];
+    subOrganizations.forEach(name => {
+        const normalized = normalizeString(name);
+        if (!normalized) {
+            return;
+        }
+        const key = normalized.toLowerCase();
+        if (seen.has(key)) {
+            return;
+        }
+        seen.add(key);
+        result.push(normalized);
+    });
+    return result;
+}
+
+function normalizeContactPoint(fnValue, emailValue) {
+    const fn = normalizeString(fnValue);
+    const email = normalizeEmail(emailValue);
+    if (!fn && !email) {
+        return null;
+    }
+    return {
+        fn,
+        email
+    };
+}
+
+function normalizePublisher(name, hierarchy) {
+    const normalizedName = normalizeString(name);
+    const normalizedHierarchy = hierarchy || null;
+    if (!normalizedName && !normalizedHierarchy) {
+        return null;
+    }
+    return {
+        name: normalizedName,
+        hierarchy: normalizedHierarchy
+    };
+}
+
+function normalizeFiles(files = [], fileDefinitions = {}, extensionMetadata = {}) {
+    const seen = new Set();
+    return files.map(file => {
+        const filename = normalizeString(file.filename);
+        if (!filename) {
+            return null;
+        }
+        const key = filename.toLowerCase();
+        if (seen.has(key)) {
+            return null;
+        }
+        seen.add(key);
+        const extension = filename.includes(".") ? filename.split(".").pop().toLowerCase() : "";
+        const descriptionInput = normalizeString(file.filedescription);
+        const mediaTypeCandidate = normalizeString(file.ianamediatype);
+        const description = descriptionInput || fileDefinitions[extension] || null;
+        const mediaType = mediaTypeCandidate || extensionMetadata[extension] || null;
+        const format = extension ? extension.toUpperCase() : null;
+        return {
+            title: filename,
+            description,
+            mediaType,
+            format
+        };
+    }).filter(Boolean);
+}
+
 function sanitizeFormData(formData) {
     const jsonObject = {};
     formData.forEach((value, key) => {
@@ -118,56 +339,63 @@ function collectSubOrganizations() {
         .filter(value => value !== "");
 }
 
-function buildDistributions(files, doi, fileDefinitions) {
-    return files.map(file => {
-        const extension = file.filename.includes(".") ? file.filename.split(".").pop().toLowerCase() : "";
-        const formatType = extension.toUpperCase();
-
-        return {
-            "@type": "dcat:Distribution",
-            "accessURL": doi,
-            "title": file.filename,
-            "format": formatType,
-            "mediaType": file.ianamediatype,
-            "description": file.filedescription || fileDefinitions[extension] || ""
-        };
-    });
-}
-
-function buildCanonicalModel(jsonObject, keywords, distributions, subOrgHierarchy) {
-    const bureauCode = document.querySelector('#bureaucode')?.value || null;
-    const programCode = document.querySelector('#programcode')?.value || null;
-    const language = document.querySelector('#language')?.value || null;
-    const references = document.querySelector('#references')?.value || null;
+function buildCanonicalModel({ formValues, keywords, files, subOrganizations, fileDefinitions, extensionMetadata }) {
+    const metadataVersion = normalizeMetadataVersion(formValues.metadataversion);
+    const title = normalizeString(formValues.title) || "";
+    const description = normalizeString(formValues.description) || "";
+    const accessLevel = normalizeAccessLevel(formValues.publicaccesslevel);
+    const bureauCodes = normalizeCodeList(formValues.bureaucode);
+    const programCodes = normalizeCodeList(formValues.programcode);
+    const languages = normalizeLanguageList(formValues.language);
+    const identifier = normalizeString(formValues.doi);
+    const landingPage = identifier || normalizeString(formValues.landingpage);
+    const issued = normalizeDate(formValues.issued);
+    const modified = normalizeDate(formValues.modified);
+    const references = normalizeReferenceList(formValues.references);
+    const themes = metadataVersion === "3.0" ? normalizeThemeList(formValues.theme) : [];
+    const policyStatement = normalizeString(formValues.policystatement);
+    const policyURL = normalizeString(formValues.policyurl);
+    const normalizedSubOrgList = normalizeSubOrganizations(subOrganizations);
+    const subOrgHierarchy = normalizedSubOrgList.length ? createSubOrgHierarchy(normalizedSubOrgList, 0) : null;
+    const publisher = normalizePublisher(formValues.publisher, subOrgHierarchy);
+    const contact = normalizeContactPoint(formValues.contactpointfn, formValues.contactpointemail);
+    const normalizedKeywords = normalizeKeywords(keywords);
+    const normalizedFiles = normalizeFiles(files, fileDefinitions, extensionMetadata);
+    const license = normalizeString(formValues.license);
+    const rights = normalizeString(formValues.rightsstatement) || normalizeString(formValues.rights);
+    const spatial = normalizeString(formValues.spatial);
+    const format = normalizeFormat(formValues.format);
+    const isPartOf = normalizeString(formValues.collection) || normalizeString(formValues.rosapcollection);
+    const webService = normalizeString(formValues.fedorapid);
 
     return {
-        metadataVersion: jsonObject.metadataversion || "1.1",
-        title: jsonObject.title || "",
-        description: jsonObject.description || "",
-        accessLevel: jsonObject.publicaccesslevel || null,
-        bureauCode: bureauCode ? [bureauCode] : null,
-        contactPointFn: jsonObject.contactpointfn || null,
-        contactPointEmail: jsonObject.contactpointemail || null,
-        distributions,
-        format: jsonObject.format || null,
-        identifier: jsonObject.doi || null,
-        isPartOf: jsonObject.collection || jsonObject.rosapcollection || null,
-        issued: jsonObject.issued || null,
-        keyword: keywords,
-        landingPage: jsonObject.doi || null,
-        language: language ? [language] : null,
-        license: jsonObject.license || null,
-        modified: jsonObject.modified || null,
-        policyStatement: jsonObject.policystatement || null,
-        policyURL: jsonObject.policyurl || null,
-        programCode: programCode ? [programCode] : null,
-        publisherName: jsonObject.publisher || null,
-        subOrgHierarchy,
-        references: references ? [references] : null,
-        rights: jsonObject.rights || jsonObject.rightsstatement || null,
-        spatial: jsonObject.spatial || null,
-        webService: jsonObject.fedorapid || null,
-        dataQuality: true
+        metadataVersion,
+        dataset: {
+            title,
+            description,
+            accessLevel,
+            bureauCodes,
+            contact,
+            dataQuality: true,
+            distributions: normalizedFiles,
+            format,
+            identifier,
+            isPartOf,
+            issued,
+            keywords: normalizedKeywords,
+            landingPage,
+            languages,
+            license,
+            modified,
+            policy: (policyStatement || policyURL) ? { statement: policyStatement, url: policyURL } : null,
+            programCodes,
+            publisher,
+            references,
+            themes,
+            rights,
+            spatial,
+            webService
+        }
     };
 }
 
@@ -195,48 +423,76 @@ function stripNulls(value) {
     return value;
 }
 
+function mapContactPoint(contact) {
+    if (!contact) {
+        return null;
+    }
+    return stripNulls({
+        "@type": "vcard:Contact",
+        "fn": contact.fn,
+        "hasEmail": contact.email ? `mailto:${contact.email}` : null
+    });
+}
+
+function mapPublisher(publisher) {
+    if (!publisher) {
+        return null;
+    }
+    return stripNulls({
+        "@type": "org:Organization",
+        "name": publisher.name,
+        ...(publisher.hierarchy && { "subOrganizationOf": publisher.hierarchy })
+    });
+}
+
+function mapDistributions(distributions, dataset) {
+    const accessURL = dataset.landingPage || dataset.webService || dataset.identifier || null;
+    return distributions.map(distribution => stripNulls({
+        "@type": "dcat:Distribution",
+        "accessURL": accessURL,
+        "title": distribution.title,
+        "format": distribution.format,
+        "mediaType": distribution.mediaType,
+        "description": distribution.description
+    }));
+}
+
 function serializeDcatUs11(model) {
+    const dataset = model.dataset;
     const output = {
         "$schema": "https://resources.data.gov/schemas/dcat-us/v1.1/schema/catalog.json",
         "conformsTo": "https://project-open-data.cio.gov/v1.1/schema",
         "@type": "dcat:Catalog",
         "@context": "https://project-open-data.cio.gov/v1.1/schema/catalog.jsonld",
         "dataset": [
-            {
+            stripNulls({
                 "@type": "dcat:Dataset",
-                "accessLevel": model.accessLevel,
-                "bureauCode": model.bureauCode,
-                "contactPoint": {
-                    "fn": model.contactPointFn,
-                    "hasEmail": model.contactPointEmail ? "mailto:" + model.contactPointEmail : null,
-                    "@type": "vcard:Contact"
-                },
-                "dataQuality": model.dataQuality,
-                "description": model.description,
-                "distribution": model.distributions,
-                "format": model.format,
-                "identifier": model.identifier,
-                "isPartOf": model.isPartOf,
-                "issued": model.issued,
-                "keyword": model.keyword,
-                "landingPage": model.landingPage,
-                "language": model.language,
-                "license": model.license,
-                "modified": model.modified,
-                "policyStatement": model.policyStatement,
-                "policyURL": model.policyURL,
-                "programCode": model.programCode,
-                "publisher": {
-                    "@type": "org:Organization",
-                    "name": model.publisherName,
-                    ...(model.subOrgHierarchy && { "subOrganizationOf": model.subOrgHierarchy })
-                },
-                "references": model.references,
-                "rights": model.rights,
-                "spatial": model.spatial,
-                "title": model.title,
-                "webService": model.webService
-            }
+                "accessLevel": dataset.accessLevel,
+                "bureauCode": dataset.bureauCodes && dataset.bureauCodes.length ? dataset.bureauCodes : null,
+                "contactPoint": mapContactPoint(dataset.contact),
+                "dataQuality": dataset.dataQuality,
+                "description": dataset.description,
+                "distribution": mapDistributions(dataset.distributions, dataset),
+                "format": dataset.format,
+                "identifier": dataset.identifier,
+                "isPartOf": dataset.isPartOf,
+                "issued": dataset.issued,
+                "keyword": dataset.keywords,
+                "theme": dataset.themes && dataset.themes.length ? dataset.themes : null,
+                "landingPage": dataset.landingPage,
+                "language": dataset.languages && dataset.languages.length ? dataset.languages : null,
+                "license": dataset.license,
+                "modified": dataset.modified,
+                "policyStatement": dataset.policy?.statement || null,
+                "policyURL": dataset.policy?.url || null,
+                "programCode": dataset.programCodes && dataset.programCodes.length ? dataset.programCodes : null,
+                "publisher": mapPublisher(dataset.publisher),
+                "references": dataset.references && dataset.references.length ? dataset.references : null,
+                "rights": dataset.rights,
+                "spatial": dataset.spatial,
+                "title": dataset.title,
+                "webService": dataset.webService
+            })
         ]
     };
 
@@ -244,45 +500,37 @@ function serializeDcatUs11(model) {
 }
 
 function serializeDcatUs3(model) {
-    // Provisional serializer profile for transition period.
-    // Uses DCAT-US 3 schema/context references with current field mappings.
+    const dataset = model.dataset;
     const output = {
         "$schema": "https://resources.data.gov/schemas/dcat-us/v3.0/schema/catalog.json",
         "conformsTo": "https://resources.data.gov/resources/dcat-us3/",
         "@type": "dcat:Catalog",
         "@context": "https://resources.data.gov/schemas/dcat-us/v3.0/schema/catalog.jsonld",
         "dataset": [
-            {
+            stripNulls({
                 "@type": "dcat:Dataset",
-                "accessLevel": model.accessLevel,
-                "bureauCode": model.bureauCode,
-                "contactPoint": {
-                    "fn": model.contactPointFn,
-                    "hasEmail": model.contactPointEmail ? "mailto:" + model.contactPointEmail : null,
-                    "@type": "vcard:Contact"
-                },
-                "description": model.description,
-                "distribution": model.distributions,
-                "identifier": model.identifier,
-                "isPartOf": model.isPartOf,
-                "issued": model.issued,
-                "keyword": model.keyword,
-                "landingPage": model.landingPage,
-                "language": model.language,
-                "license": model.license,
-                "modified": model.modified,
-                "programCode": model.programCode,
-                "publisher": {
-                    "@type": "org:Organization",
-                    "name": model.publisherName,
-                    ...(model.subOrgHierarchy && { "subOrganizationOf": model.subOrgHierarchy })
-                },
-                "references": model.references,
-                "rights": model.rights,
-                "spatial": model.spatial,
-                "title": model.title,
-                "webService": model.webService
-            }
+                "accessLevel": dataset.accessLevel,
+                "bureauCode": dataset.bureauCodes && dataset.bureauCodes.length ? dataset.bureauCodes : null,
+                "contactPoint": mapContactPoint(dataset.contact),
+                "description": dataset.description,
+                "distribution": mapDistributions(dataset.distributions, dataset),
+                "identifier": dataset.identifier,
+                "isPartOf": dataset.isPartOf,
+                "issued": dataset.issued,
+                "keyword": dataset.keywords,
+                "theme": dataset.themes && dataset.themes.length ? dataset.themes : null,
+                "landingPage": dataset.landingPage,
+                "language": dataset.languages && dataset.languages.length ? dataset.languages : null,
+                "license": dataset.license,
+                "modified": dataset.modified,
+                "programCode": dataset.programCodes && dataset.programCodes.length ? dataset.programCodes : null,
+                "publisher": mapPublisher(dataset.publisher),
+                "references": dataset.references && dataset.references.length ? dataset.references : null,
+                "rights": dataset.rights,
+                "spatial": dataset.spatial,
+                "title": dataset.title,
+                "webService": dataset.webService
+            })
         ]
     };
 
@@ -291,12 +539,13 @@ function serializeDcatUs3(model) {
 
 function validateByProfile(model) {
     const errors = [];
+    const dataset = model.dataset;
 
-    if (!model.title) errors.push("Title is required.");
-    if (!model.description) errors.push("Description is required.");
+    if (!dataset.title) errors.push("Title is required.");
+    if (!dataset.description) errors.push("Description is required.");
 
     if (model.metadataVersion === "3.0") {
-        if (!model.identifier) errors.push("Identifier is required for DCAT-US 3.");
+        if (!dataset.identifier) errors.push("Identifier is required for DCAT-US 3.");
     }
 
     if (!model.metadataVersion || (model.metadataVersion !== "1.1" && model.metadataVersion !== "3.0")) {
@@ -317,8 +566,34 @@ function serializeByProfile(model) {
     return serializeDcatUs11(model);
 }
 
+function toggleProfileUI(metadataVersion) {
+    const profileSections = document.querySelectorAll('.profile-section');
+    profileSections.forEach(section => {
+        const appliesTo = section.getAttribute('data-profile');
+        const shouldShow = appliesTo === metadataVersion;
+        section.hidden = !shouldShow;
+    });
+
+    const hints = document.querySelectorAll('.field-hint');
+    hints.forEach(hint => {
+        const appliesTo = hint.getAttribute('data-profile');
+        if (appliesTo === 'all') {
+            hint.hidden = false;
+            return;
+        }
+        hint.hidden = appliesTo !== metadataVersion;
+    });
+
+    const profileRequiredInputs = document.querySelectorAll('[data-required-profile]');
+    profileRequiredInputs.forEach(input => {
+        const appliesTo = input.getAttribute('data-required-profile');
+        input.required = appliesTo === metadataVersion;
+    });
+}
+
 function validateForm() {
-    const fedoraInput = document.forms["libraryItemForm"]["fedorapid"];
+    const form = document.forms["libraryItemForm"];
+    const fedoraInput = form["fedorapid"];
     const x = fedoraInput.value.trim();
 
     if (x) {
@@ -359,26 +634,23 @@ async function collectFormData() {
     });
 
     const files = [...filesFromGroups, ...filesFromText];
-    const distributions = buildDistributions(files, jsonObject.doi, fileDefinitions);
-
-    const subOrgs = collectSubOrganizations();
-    let subOrgHierarchy = null;
-    if (subOrgs.length !== 0) {
-        subOrgHierarchy = createSubOrgHierarchy(subOrgs, 0);
-    }
+    const subOrganizations = collectSubOrganizations();
 
     return {
-        jsonObject,
+        formValues: jsonObject,
         keywords,
-        distributions,
-        subOrgHierarchy
+        files,
+        subOrganizations,
+        fileDefinitions,
+        extensionMetadata
     };
 }
 
 // Generate JSON
 async function generateJSON() {
-    const { jsonObject, keywords, distributions, subOrgHierarchy } = await collectFormData();
-    const canonicalModel = buildCanonicalModel(jsonObject, keywords, distributions, subOrgHierarchy);
+    const canonicalInputs = await collectFormData();
+    toggleProfileUI(canonicalInputs.formValues.metadataversion || '1.1');
+    const canonicalModel = buildCanonicalModel(canonicalInputs);
 
     const validation = validateByProfile(canonicalModel);
     if (!validation.isValid) {
@@ -392,7 +664,17 @@ async function generateJSON() {
     const blob = new Blob([jsonString], { type: "application/json" });
     const link = document.getElementById("downloadLink");
     link.href = URL.createObjectURL(blob);
-    link.download = `${canonicalModel.title || "dcat-us-metadata"}.json`;
+    link.download = `${canonicalModel.dataset.title || "dcat-us-metadata"}.json`;
     link.style.display = 'block';
     link.textContent = "Download your JSON file";
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const metadataVersionField = document.getElementById('metadataVersion');
+    if (metadataVersionField) {
+        toggleProfileUI(metadataVersionField.value || '1.1');
+        metadataVersionField.addEventListener('change', event => {
+            toggleProfileUI(event.target.value || '1.1');
+        });
+    }
+});

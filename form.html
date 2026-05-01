@@ -4,27 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css" />
-  <title>DCAT-US version 1.1 JSON Generator</title>
+  <title>DCAT-US Dual-Mode JSON Generator</title>
   <script src="app.js"></script>
 </head>
 <body>
-  <h1>DCAT-US Version 1.1 JSON Generator</h1>
+  <h1>DCAT-US Dual-Mode JSON Generator</h1>
+  <p class="field-hint" data-profile="all">Choose between DCAT-US 1.1 and DCAT-US 3.0 outputs while keeping legacy defaults intact.</p>
   <h3><a href="https://github.com/ptvrdy/dcat_us_v1.1_generator" target="_blank">DCAT-US Generator Project on GitHub</a></h3><br>
   <form id="libraryItemForm">
     <!--Metadata Version-->
-    <label for="metadataVersion">Metadata Standard Version:</label><br>
-    <p>Select DCAT-US version for generated output JSON.</p>
-    <input type="text" list="metadataVersions" name="metadataversion" id="metadataVersion" value="1.1" required>
-    <datalist id="metadataVersions">
-        <option value="1.1">DCAT-US 1.1</option>
+    <fieldset class="field-group" data-profile="all">
+      <legend>Metadata Standard Version</legend>
+      <p class="field-hint" data-profile="all">DCAT-US 1.1 remains the default; switch to DCAT-US 3.0 to unlock v3-only guidance and fields.</p>
+      <label for="metadataVersion">DCAT-US Profile</label>
+      <select name="metadataversion" id="metadataVersion" required>
+        <option value="1.1" selected>DCAT-US 1.1 (default)</option>
         <option value="3.0">DCAT-US 3.0</option>
-    </datalist><br><br>
+      </select>
+    </fieldset><br>
 
     <!--Title and Description-->
-    <label for="title">Title:</label><br>
+    <label for="title">Title:</label><span class="field-hint" data-profile="all">Required by both profiles.</span><br>
     <input type="text" id="title" name="title" placeholder="Title" required><br><br>
 
-    <label for="description">Description or Abstract:</label><br>
+    <label for="description">Description or Abstract:</label><span class="field-hint" data-profile="all">Required by both profiles.</span><br>
     <textarea rows="10" cols="80" id="description" name="description" placeholder="Description" required></textarea><br><br>
 
     <!--Publisher-->
@@ -60,8 +63,8 @@
     <input type="email" id="contactpointemail" name="contactpointemail" placeholder="JaneDoe@example.com" required><br><br>
 
     <!--DOI-->
-    <label for="doi">DOI or Handle:</label><br>
-    <input type="url" id="doi" name="doi" placeholder="https://doi.org/" required><br><br>
+    <label for="doi">DOI or Handle:</label><span class="field-hint" data-profile="3.0">Required for DCAT-US 3.0; recommended for DCAT-US 1.1.</span><br>
+    <input type="url" id="doi" name="doi" placeholder="https://doi.org/" data-required-profile="3.0"><br><br>
 
     <!--File Group-->
     <H3>Files:</H3>
@@ -157,11 +160,11 @@
     <input type="date" id="modified" name="modified" required><br><br>
 
     <!--References-->
-    <label for="references">Report or other item this data asset references (DOI Preferred):</label><br>
+    <label for="references">Report or other item this data asset references (DOI Preferred):</label><span class="field-hint" data-profile="all">Optional cross-references; include one per line.</span><br>
     <input type="url" id="references" name="references" placeholder="https://doi.org/"><br><br>
 
     <!--Spatial-->
-    <label for="spatial">Spatial (The range of spatial applicability of a dataset. Could include a spacial region like a bounding box or a named place):</label><br>
+    <label for="spatial">Spatial (The range of spatial applicability of a dataset. Could include a spacial region like a bounding box or a named place):</label><span class="field-hint" data-profile="all">Applies to both profiles; keep free-text for now.</span><br>
     <p>For more information on how to add more precise spatial information such as bounding box, read the documentation here: <a href="url">https://resources.data.gov/resources/dcat-us/#spatial</a></p>
     <input type="text" id="spatial" name="spatial" list="US"><br><br>
     <datalist id="US" required>
@@ -169,13 +172,13 @@
     </datalist>
 
     <!--Policy Information-->
-    <label for="policystatement">Policy statement item falls under:</label><br>
+    <label for="policystatement">Policy statement item falls under:</label><span class="field-hint" data-profile="all">Optional policy guidance field.</span><br>
     <input list="policystatements" type="text" name="policystatement" id="policystatement">
     <datalist id="policystatements" required>
         <option selected value="This dataset was made public under the requirements enumerated in the U.S. Department of Transportation's 'Plan to Increase Public Access to the Results of Federally-Funded Scientific Research' Version 1.1 <https://doi.org/10.21949/1520559> and guidelines suggested by the DOT Public Access website <https://doi.org/10.21949/1503647>, in effect and current as of December 03, 2020.">DOT Policies</option>
     </datalist><br><br>
 
-    <label for="policyurl">Link/DOI to Policy:</label><br>
+    <label for="policyurl">Link/DOI to Policy:</label><span class="field-hint" data-profile="all">Optional policy guidance field.</span><br>
     <input type="text" list="policyurls" name="policyurl" id="policyurl">
     <datalist id="policyurls" required>
         <option selected value="https://doi.org/10.21949/1520559 , https://doi.org/10.21949/1503647">DOT Policies</option>
@@ -281,10 +284,18 @@
     </datalist><br><br>
 
     <!--Fedora/CDC PID-->
-    <label for="fedorapid">DOT ONLY Fedora/CDC PID of Data Asset in "dot:[PID]" format (ex: dot:76508)</label><br>
+    <label for="fedorapid">DOT ONLY Fedora/CDC PID of Data Asset in "dot:[PID]" format (ex: dot:76508)</label><span class="field-hint" data-profile="all">Optional field for ROSA P integration.</span><br>
     <input type="text" name="fedorapid" id="fedorapid"><br><br>
 
-    <button type="button" onclick="validateForm()" class="button" console.log("Button clicked, starting JSON generation...");>Generate JSON</button>
+    <section class="profile-section" data-profile="3.0" hidden>
+      <h2>DCAT-US 3.0 Enhancements</h2>
+      <p class="field-hint" data-profile="3.0">Complete these optional enrichments when producing DCAT-US 3.0 output.</p>
+      <label for="themes">Dataset Themes (DCAT-US 3.0)</label>
+      <textarea id="themes" name="theme" rows="4" cols="80" placeholder="Intelligent transportation systems&#10;Transportation safety"></textarea>
+      <span class="field-hint" data-profile="3.0">Use comma- or newline-separated labels referencing the DCAT-US theme taxonomy.</span>
+    </section>
+
+    <button type="button" onclick="validateForm()" class="button">Generate JSON</button>
   </form>
 
   <a id="downloadLink" style="display:none;">Download JSON</a>

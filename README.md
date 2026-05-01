@@ -1,4 +1,4 @@
-# README for DCAT-US Version 1.1 Generator     
+# README for DCAT-US Dual-Mode Generator
 <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" height="28"> <img src="https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E" alt="JavaScript" height="28"> <img src="https://img.shields.io/badge/json-000000?style=for-the-badge&logo=json&logoColor=white" alt="JSON" height="28"> <a href="https://creativecommons.org/licenses/by/4.0"><img src="https://licensebuttons.net/l/by/3.0/88x31.png" alt="Creative Commons 4.0 BY License" height="28"></a>
 
 National Transportation Library (NTL). Bureau of Transportation Statistics (BTS), U.S. Department of Transportation (USDOT). [ROR ID: https://ror.org/00snbrd52](https://ror.org/00snbrd52)  
@@ -11,13 +11,14 @@ C. [Data and Related Files Overview](#c-data-and-related-files-overview)
 D. [LibGuide Implementation Information](#d-libguide-implementation-information)  
 E. [Update Log](#e-update-log)  
 
-**Title of Dataset:**  DCAT-US Version 1.1 Generator  
+**Title of Dataset:**  DCAT-US Dual-Mode Metadata Generator
 
-**Description of the Project:** This project aims to ease barriers in creating DCAT-US version 1.1 JSON files on researchers, data managers, data curators, and all professionals who manage and create data packages for the U.S. Government. DCAT-US is the required metadata schema for all federally funded data. This tool is to ease the burden of creating these files by creating a simple HTML form that researchers and data managers themselves can use. The form can be embedded easily in any standard webpage. The form can also be embedded in SpringShare LibGuides, which is especially useful for librarians who handle federally-funded research data.
+**Description of the Project:** This project now supports generating JSON for both DCAT-US version 1.1 and DCAT-US 3.0. A dual-mode HTML form plus JavaScript serializer pipeline helps researchers, data managers, data curators, and developers produce metadata compliant with either profile. A canonical internal model powers profile-specific serializers, and inline UI hints explain requirements that differ between versions.
 
 **Dataset Archive Link:** <https://github.com/ptvrdy/dcat_us_v1.1_generator>  
 
 **DCAT-US Version 1.1 Link:** <https://resources.data.gov/resources/dcat-us/>
+**DCAT-US Version 3.0 Link:** <https://resources.data.gov/resources/dcat-us3/>
 
 **Authorship Information:**  
 
@@ -49,20 +50,23 @@ Link to CSS: <https://codepen.io/edigiam/pen/WwPPOv>
 
 File List:    
 
->  1. Filename: form.html  
->  Short Description:  HTML form   
+>  1. Filename: form.html
+>  Short Description:  Dual-mode HTML form with profile selector, inline guidance, and optional DCAT-US 3-only sections.
 
->  2. Filename: styles.css    
->  Short Description:  CSS file containing styling and display.  
+>  2. Filename: styles.css
+>  Short Description:  Styles including profile-aware hints and DCAT-US 3 emphasis blocks.
 
->  3. Filename: app.js  
->  Short Description:  Javascript file that takes HTML form input and translates it to the DCAT-US file.    
+>  3. Filename: app.js
+>  Short Description:  Canonical model builder and serializers for DCAT-US 1.1 and DCAT-US 3.0 with validation pipeline.
 
->  4. Filename: LICENSE  
->  Short Description:  Creative Commons 4.0 International Deed (CC BY 4.0).  
+>  4. Filename: README.md
+>  Short Description:  Project documentation describing the dual-mode workflow, migration guidance, and usage notes.
 
->  5. Filename: README.md  
->  Short Description:  README file for the project containing project and file information.   
+>  5. Filename: docs/dcat-us3-mapping.md (new)
+>  Short Description:  Authoritative mapping matrix, verification logs, and guidance references for DCAT-US 3 properties.
+
+>  6. Filename: LICENSE
+>  Short Description:  Creative Commons 4.0 International Deed (CC BY 4.0).
 
 ## D. LibGuide Implementation Information   
 
@@ -94,8 +98,9 @@ File List:
 
 <img src="pictures/Widget Complete.png" alt="Final Widget view in LibGuides">
 
-## E. Update Log  
+## E. Update Log
 
-This README.md file was originally created on 2024-09-20 by Peyton Tvrdy ([0000-0002-9720-4725](https://orcid.org/0000-0002-9720-4725)), Data Management and Data Curation Fellow, National Transportation Library <peyton.tvrdy.ctr@dot.gov>  
+This README.md file was originally created on 2024-09-20 by Peyton Tvrdy ([0000-0002-9720-4725](https://orcid.org/0000-0002-9720-4725)), Data Management and Data Curation Fellow, National Transportation Library <peyton.tvrdy.ctr@dot.gov>
  
-2024-09-20: Original file created  
+2024-09-20: Original file created
+2026-05-01: Updated for dual-mode (DCAT-US 1.1 + 3.0) workflow, canonical serializer architecture, and verification-first checklist references.

@@ -22,19 +22,30 @@ Key recommendations based on current code in [`generateJSON()`](app.js:101), sch
 
 4. Maintain non-breaking defaults
 - Default selected mode stays DCAT-US 1.1 during transition.
-- Existing 1.1 output remains unchanged unless user selects v3.
-- Preserve current ROSA P and USDOT-centric data entry patterns.
+- Ensure [`form.html`](form.html) preselects `dcat-us-1.1` and [`app.js`](app.js) falls back to [`serializeDcatUs11()`](app.js:138) when no version is specified.
+- Existing 1.1 output remains byte-identical unless the user explicitly selects v3; protect by snapshot tests that compare current [`serializeDcatUs11()`](app.js:138) output across fixtures.
+- Preserve current ROSA P and USDOT-centric data entry patterns by keeping existing field group ordering, hints, and validations untouched; gate any v3-only controls behind the new version toggle so legacy users see no behavioral changes.
 
 5. Add verification-first checklist for code implementation
-- Before coding final v3 mappings, verify each target property against official DCAT-US 3 guidance at [`dcat-us3 resource`](https://resources.data.gov/resources/dcat-us3/).
-- Confirm per-property cardinality, requiredness, datatype, controlled vocabularies, and JSON-LD context behavior.
-- Lock mapping table and only then finalize serializer constants.
+- [ ] Before coding final v3 mappings, verify each target property against official DCAT-US 3 guidance at [`dcat-us3 resource`](https://resources.data.gov/resources/dcat-us3/).
+- [ ] Confirm and document per-property cardinality, requiredness, datatype, controlled vocabularies, and JSON-LD context behavior.
+- [ ] Lock the mapping table once validation is complete and only then finalize serializer constants.
 
 6. File-by-file implementation plan
-- [`form.html`](form.html): add profile selector, field annotations, optional v3-only sections.
-- [`app.js`](app.js): implement canonical builder + two serializers + profile switch + validation pipeline.
-- [`README.md`](README.md): document dual-mode usage, migration notes, known differences, and deprecation path.
-- Optional new doc: [`docs/dcat-us3-mapping.md`](docs/dcat-us3-mapping.md) for authoritative mapping matrix and verification records.
+- [`form.html`](form.html)
+  - [x] Add profile selector toggling between DCAT-US 1.1 and DCAT-US 3 with `dcat-us-1.1` preselected.
+  - [x] Embed inline field annotations that call out version applicability and validation hints.
+  - [x] Introduce conditionally rendered sections for v3-only inputs and guard them behind the selector.
+- [`app.js`](app.js)
+  - [x] Implement `collectFormData`, `buildCanonicalModel`, `serializeDcatUs11`, `serializeDcatUs3`, and `validateByProfile` to formalize the profile pipeline.
+  - [x] Ensure canonical builder normalizes shared inputs (keywords, distributions, contacts, publishers, codes, dates) before serialization.
+  - [x] Wire up profile switch logic that routes to the appropriate serializer and enforces validation rules per profile.
+- [`README.md`](README.md)
+  - [x] Document dual-mode usage instructions, migration notes, known differences, and deprecation milestones.
+  - [x] Highlight verification-first workflow and reference the authoritative mapping matrix for implementers.
+- [`docs/dcat-us3-mapping.md`](docs/dcat-us3-mapping.md)
+  - [x] Create new authoritative mapping matrix capturing property-level verification outcomes, controlled vocabularies, and JSON-LD context notes.
+  - [x] Maintain verification records tied back to DCAT-US 3 guidance for auditability.
 
 7. Backward compatibility and deprecation strategy
 - Phase 1: default 1.1, optional 3.
