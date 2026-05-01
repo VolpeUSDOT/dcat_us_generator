@@ -9,17 +9,17 @@
 </head>
 <body>
   <h1>DCAT-US Dual-Mode JSON Generator</h1>
-  <p class="field-hint" data-profile="all">Choose between DCAT-US 1.1 and DCAT-US 3.0 outputs while keeping legacy defaults intact.</p>
+  <p class="field-hint" data-profile="all">DCAT-US 3.0 output is default; switch to DCAT-US 1.1 for legacy compatibility.</p>
   <h3><a href="https://github.com/ptvrdy/dcat_us_v1.1_generator" target="_blank">DCAT-US Generator Project on GitHub</a></h3><br>
   <form id="libraryItemForm">
     <!--Metadata Version-->
     <fieldset class="field-group" data-profile="all">
       <legend>Metadata Standard Version</legend>
-      <p class="field-hint" data-profile="all">DCAT-US 1.1 remains the default; switch to DCAT-US 3.0 to unlock v3-only guidance and fields.</p>
+      <p class="field-hint" data-profile="all">DCAT-US 3.0 is now the default output; switch to DCAT-US 1.1 for legacy compatibility.</p>
       <label for="metadataVersion">DCAT-US Profile</label>
       <select name="metadataversion" id="metadataVersion" required>
-        <option value="1.1" selected>DCAT-US 1.1 (default)</option>
-        <option value="3.0">DCAT-US 3.0</option>
+        <option value="3.0" selected>DCAT-US 3.0 (default)</option>
+        <option value="1.1">DCAT-US 1.1</option>
       </select>
     </fieldset><br>
 
@@ -107,7 +107,7 @@
         
     <!--Language-->
     <label for="language">Language of item (ISO 639-1):</label><br>
-    <input list="languages" type="text" name="language" id="language">
+    <input list="languages" type="text" name="language" id="language" value="en">
     <datalist id="languages" required>
         <option value="en">English</option>
         <option value="es">Spanish</option>

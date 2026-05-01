@@ -105,7 +105,7 @@ function normalizeFormat(value) {
 }
 
 function normalizeMetadataVersion(value) {
-    return normalizeString(value) || "1.1";
+    return normalizeString(value) || "3.0";
 }
 
 function normalizeDate(value) {

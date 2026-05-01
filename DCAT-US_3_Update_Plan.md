@@ -21,8 +21,8 @@ Key recommendations based on current code in [`generateJSON()`](app.js:101), sch
 - Emit profile-specific JSON from canonical data to reduce duplication and regression risk.
 
 4. Maintain non-breaking defaults
-- Default selected mode stays DCAT-US 1.1 during transition.
-- Ensure [`form.html`](form.html) preselects `dcat-us-1.1` and [`app.js`](app.js) falls back to [`serializeDcatUs11()`](app.js:138) when no version is specified.
+- Default selected mode now DCAT-US 3.0 for forward-looking deployments.
+- Ensure [`form.html`](form.html) preselects `dcat-us-3.0` and [`app.js`](app.js) falls back to [`serializeDcatUs3()`](app.js:473) when no version is specified.
 - Existing 1.1 output remains byte-identical unless the user explicitly selects v3; protect by snapshot tests that compare current [`serializeDcatUs11()`](app.js:138) output across fixtures.
 - Preserve current ROSA P and USDOT-centric data entry patterns by keeping existing field group ordering, hints, and validations untouched; gate any v3-only controls behind the new version toggle so legacy users see no behavioral changes.
 
@@ -56,5 +56,6 @@ Key recommendations based on current code in [`generateJSON()`](app.js:101), sch
 - Snapshot fixtures for both modes from identical canonical input.
 - 1.1 regression tests ensure byte-equivalent or semantically equivalent output.
 - v3 conformance checks against verified schema/profile requirements.
+- For example, use [`complete_example.json` for a Dataset example here](https://github.com/GSA/dcat-us/blob/main/jsonschema/examples/Dataset/good/complete_example.json)
 
 This delivers a practical migration path that supports both standards immediately while minimizing risk and keeping implementation scoped to the current project structure.

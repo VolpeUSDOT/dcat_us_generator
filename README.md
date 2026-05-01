@@ -16,13 +16,11 @@ E. [Update Log](#e-update-log)
 
 **Title of Dataset:**  DCAT-US Dual-Mode Metadata Generator
 
-**Description of the Project:** This project now supports generating JSON for both DCAT-US version 1.1 and DCAT-US 3.0. A dual-mode HTML form plus JavaScript serializer pipeline helps researchers, data managers, data curators, and developers produce metadata compliant with either profile. A canonical internal model powers profile-specific serializers, and inline UI hints explain requirements that differ between versions.
+**Description of the Project:** This project now supports generating JSON for both DCAT-US version 1.1 and DCAT-US 3.0, with DCAT-US 3.0 as the default output. A dual-mode HTML form plus JavaScript serializer pipeline helps researchers, data managers, data curators, and developers produce metadata compliant with either profile. A canonical internal model powers profile-specific serializers, and inline UI hints explain requirements that differ between versions.
 
-**Dataset Archive Link:** <https://github.com/ptvrdy/dcat_us_v1.1_generator>  
-
-**DCAT-US Version 1.1 Link:** <https://resources.data.gov/resources/dcat-us/>
-
-**DCAT-US Version 3.0 Link:** <https://resources.data.gov/resources/dcat-us3/>
+**Dataset Archive Link:** <https://github.com/VolpeUSDOT/dcat_us_generator>
+**DCAT-US Version 1.1 Link:** <https://resources.data.gov/resources/dcat-us/>  
+**DCAT-US Version 3.0 Link:** <https://resources.data.gov/resources/dcat-us3/>  
 
 **Authorship Information:**  
 
@@ -35,12 +33,12 @@ E. [Update Log](#e-update-log)
 >  Name: Joesph Lambeth     
 >  Email: josephwlambeth@gmail.com  
 
-> *DCAT-US 3.0 Reviser*
+> *DCAT-US 3.0 Reviser*  
 >  Name: Dan Flynn <a href="https://orcid.org/0000-0002-2978-5257"><img src="https://th.bing.com/th/id/OIP.8aLkQghWV6uvFMxGtFAgmwHaHa?rs=1&pid=ImgDetMain" height="19"> ([0000-0002-2978-5257](https://orcid.org/0000-0002-2978-5257))   
 >  Institution: USDOT Volpe National Transportation Systems Center [(ROR ID: https://ror.org/04a2k6j28)](https://ror.org/04a2k6j28)   
 >  Email: dan.flynn@dot.gov  
 
-*Disclaimer*  
+*Contains AI Generated Content*  
 Significant portions of this code were generated using ChatGPT 4 and GPT-5.3-Codex. 
 
 *CSS Citation*  
@@ -79,27 +77,27 @@ File List:
 
 ## D. LibGuide Implementation Information   
 
-1. Copy the CSS raw file link:  
-`https://raw.githubusercontent.com/ptvrdy/dcat_us_v1.1_generator/main/styles.css`
+1. Copy the CSS raw file link:
+`https://raw.githubusercontent.com/VolpeUSDOT/dcat_us_generator/main/styles.css`
 
-2. In the LibGuide Custom JS/CSS box, add the following `<link>` tag:  
-`<link rel="stylesheet" href="https://raw.githubusercontent.com/ptvrdy/dcat_us_v1.1_generator/main/styles.css">`  
+2. In the LibGuide Custom JS/CSS box, add the following `<link>` tag:
+`<link rel="stylesheet" href="https://raw.githubusercontent.com/VolpeUSDOT/dcat_us_generator/main/styles.css">`
 
-3. Copy the Javascript raw file link:  
-`https://raw.githubusercontent.com/ptvrdy/dcat_us_v1.1_generator/main/app.js`
+3. Copy the Javascript raw file link:
+`https://raw.githubusercontent.com/VolpeUSDOT/dcat_us_generator/main/app.js`
 
-4. In the LibGuide Custom JS/CSS box, add the following `<script>` tag:  
-`<script src="https://raw.githubusercontent.com/ptvrdy/dcat_us_v1.1_generator/main/app.js"></script>`  
+4. In the LibGuide Custom JS/CSS box, add the following `<script>` tag:
+`<script src="https://raw.githubusercontent.com/VolpeUSDOT/dcat_us_generator/main/app.js"></script>`
 
 <img src="pictures/custom css.png" alt="Custom JS/CSS Window in SpringShare's LibGuides">    
 
-5. Copy the GitPages HTML raw file link:  
-`https://ptvrdy.github.io/dcat_us_v1.1_generator/form.html`  
+5. Copy the GitPages HTML raw file link:
+`https://volpeusdot.github.io/dcat_us_generator/form.html`
 
 6. In the LibGuide, create new box and add a "Widget"  
 
-7. In the Widget HTML box, add the following `<iframe>` tag:  
-`<iframe src="https://ptvrdy.github.io/dcat_us_v1.1_generator/form.html" width="100%" height="600px"></iframe>`  
+7. In the Widget HTML box, add the following `<iframe>` tag:
+`<iframe src="https://volpeusdot.github.io/dcat_us_generator/form.html" width="100%" height="600px"></iframe>`
 
 <img src="pictures/Add widget.png" alt="Add Media/Widget Window in LibGuides">
 
