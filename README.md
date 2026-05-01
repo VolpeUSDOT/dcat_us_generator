@@ -2,7 +2,10 @@
 <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" height="28"> <img src="https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E" alt="JavaScript" height="28"> <img src="https://img.shields.io/badge/json-000000?style=for-the-badge&logo=json&logoColor=white" alt="JSON" height="28"> <a href="https://creativecommons.org/licenses/by/4.0"><img src="https://licensebuttons.net/l/by/3.0/88x31.png" alt="Creative Commons 4.0 BY License" height="28"></a>
 
 National Transportation Library (NTL). Bureau of Transportation Statistics (BTS), U.S. Department of Transportation (USDOT). [ROR ID: https://ror.org/00snbrd52](https://ror.org/00snbrd52)  
-2024-09-20  
+2024-09-20 
+
+Volpe National Transportation Systems Center, U.S. Department of Transportation (USDOT) [(ROR ID: https://ror.org/04a2k6j28)](https://ror.org/04a2k6j28)   
+2026-05-01
 
 ## Table of Contents
 A. [General Information](#a-general-information)  
@@ -18,6 +21,7 @@ E. [Update Log](#e-update-log)
 **Dataset Archive Link:** <https://github.com/ptvrdy/dcat_us_v1.1_generator>  
 
 **DCAT-US Version 1.1 Link:** <https://resources.data.gov/resources/dcat-us/>
+
 **DCAT-US Version 3.0 Link:** <https://resources.data.gov/resources/dcat-us3/>
 
 **Authorship Information:**  
@@ -31,8 +35,13 @@ E. [Update Log](#e-update-log)
 >  Name: Joesph Lambeth     
 >  Email: josephwlambeth@gmail.com  
 
+> *DCAT-US 3.0 Reviser*
+>  Name: Dan Flynn <a href="https://orcid.org/0000-0002-2978-5257"><img src="https://th.bing.com/th/id/OIP.8aLkQghWV6uvFMxGtFAgmwHaHa?rs=1&pid=ImgDetMain" height="19"> ([0000-0002-2978-5257](https://orcid.org/0000-0002-2978-5257))   
+>  Institution: USDOT Volpe National Transportation Systems Center [(ROR ID: https://ror.org/04a2k6j28)](https://ror.org/04a2k6j28)   
+>  Email: dan.flynn@dot.gov  
+
 *Disclaimer*  
-Significant portions of this code were generated using ChatGPT 4. 
+Significant portions of this code were generated using ChatGPT 4 and GPT-5.3-Codex. 
 
 *CSS Citation*  
 CSS for this project was modified from "Pretty Form" by Evan DiGiambattista ([GitHub](https://github.com/edigi135)) ([CodePen](https://codepen.io/edigiam)).  
@@ -42,7 +51,7 @@ Link to CSS: <https://codepen.io/edigiam/pen/WwPPOv>
 
 **Recommended citation for the project:**  
 
->  Tvrdy, Peyton, and Joseph Lambeth (2024). *DCAT-US Version 1.1 Generator*. <https://github.com/ptvrdy/dcat_us_v1.1_generator>  
+>  Tvrdy, Peyton, Joseph Lambeth, and Dan Flynn (2026). *DCAT-US Version 3.0 Generator*. <https://github.com/VolpeUSDOT/dcat_us_generator>  
 
 **Licenses/restrictions:** Licenses/restrictions placed on the data: <https://creativecommons.org/licenses/by/4.0>  
  

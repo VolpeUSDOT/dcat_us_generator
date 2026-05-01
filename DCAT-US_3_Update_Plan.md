@@ -27,9 +27,9 @@ Key recommendations based on current code in [`generateJSON()`](app.js:101), sch
 - Preserve current ROSA P and USDOT-centric data entry patterns by keeping existing field group ordering, hints, and validations untouched; gate any v3-only controls behind the new version toggle so legacy users see no behavioral changes.
 
 5. Add verification-first checklist for code implementation
-- [ ] Before coding final v3 mappings, verify each target property against official DCAT-US 3 guidance at [`dcat-us3 resource`](https://resources.data.gov/resources/dcat-us3/).
-- [ ] Confirm and document per-property cardinality, requiredness, datatype, controlled vocabularies, and JSON-LD context behavior.
-- [ ] Lock the mapping table once validation is complete and only then finalize serializer constants.
+- [x] Before coding final v3 mappings, verify each target property against official DCAT-US 3 guidance at [`dcat-us3 resource`](https://resources.data.gov/resources/dcat-us3/).
+- [x] Confirm and document per-property cardinality, requiredness, datatype, controlled vocabularies, and JSON-LD context behavior.
+- [x] Lock the mapping table once validation is complete and only then finalize serializer constants.
 
 6. File-by-file implementation plan
 - [`form.html`](form.html)
