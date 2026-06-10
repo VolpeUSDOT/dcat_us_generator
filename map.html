@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bounding Box Selector</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-o9N1j72XS7Fp7hETdTyWoPa5grPLUmpHF9z8uu5MRYM="
+    crossorigin=""
+  />
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 100vh;
+    }
+    header,
+    footer {
+      padding: 1rem;
+      background-color: #143467;
+      color: #fff;
+    }
+    header a,
+    footer a {
+      color: #fff;
+      text-decoration: underline;
+    }
+    #map {
+      flex: 1;
+      min-height: 420px;
+    }
+    .controls {
+      padding: 1rem;
+      background-color: #f2f4f7;
+      border-top: 1px solid #d4d8de;
+    }
+    .controls label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .controls textarea {
+      width: 100%;
+      min-height: 6rem;
+      font-family: monospace;
+      resize: vertical;
+    }
+    .controls button {
+      margin-right: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      background-color: #143467;
+      color: #fff;
+      cursor: pointer;
+    }
+    .controls button.secondary {
+      background-color: #5b708b;
+    }
+    .controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Draw Research Project Bounding Box</h1>
+      <p>
+        Drag on the map to draw a rectangle that captures the spatial extent of
+        the research project. When finished, copy the GeoJSON coordinates or
+        send them back to the DCAT generator.
+      </p>
+      <p>
+        <a href="form.html">Return to DCAT Generator Form</a>
+      </p>
+    </header>
+
+    <div id="map"></div>
+
+    <section class="controls">
+      <div>
+        <button id="start-draw" type="button">Start drawing</button>
+        <button id="clear" class="secondary" type="button">Clear</button>
+        <button id="send" type="button" disabled>Populate form</button>
+      </div>
+      <label for="bbox-output">Bounding Box (GeoJSON Polygon)</label>
+      <textarea id="bbox-output" readonly placeholder="Draw a rectangle to generate coordinates."></textarea>
+    </section>
+
+    <footer>
+      <small>
+        Powered by Leaflet. Bounding boxes are encoded as GeoJSON polygons using
+        the order [west, south], [east, south], [east, north], [west, north],
+        [west, south].
+      </small>
+    </footer>
+  </main>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-pMpr2X2/b8LRW5Bwb1s/oicbZk0rg+MQIVmI74tPm28="
+    crossorigin=""
+  ></script>
+  <script>
+    (function () {
+      const DEFAULT_CENTER = [39.8283, -98.5795];
+      const DEFAULT_ZOOM = 4;
+      const USER_LOCATION_ZOOM = 9;
+      const GEO_IP_ENDPOINT = 'https://ipapi.co/json/';
+
+      const map = L.map('map', {
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM,
+        preferCanvas: true,
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      async function centerMapUsingIP() {
+        try {
+          const response = await fetch(GEO_IP_ENDPOINT, {
+            headers: {
+              Accept: 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Unexpected status ${response.status}`);
+          }
+
+          const data = await response.json();
+          const latitude = Number(data.latitude);
+          const longitude = Number(data.longitude);
+
+          if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+            throw new Error('Invalid coordinate response');
+          }
+
+          map.setView([latitude, longitude], USER_LOCATION_ZOOM);
+        } catch (error) {
+          console.warn('Unable to center map using IP geolocation.', error);
+        }
+      }
+
+      centerMapUsingIP();
+
+      let drawMode = false;
+      let rectangle = null;
+      let startLatLng = null;
+
+      const startButton = document.getElementById('start-draw');
+      const clearButton = document.getElementById('clear');
+      const sendButton = document.getElementById('send');
+      const output = document.getElementById('bbox-output');
+
+      function enableDrawing() {
+        drawMode = true;
+        startLatLng = null;
+        startButton.disabled = true;
+        sendButton.disabled = true;
+        output.value = '';
+        map.dragging.disable();
+        map.doubleClickZoom.disable();
+        map.getContainer().style.cursor = 'crosshair';
+      }
+
+      function disableDrawing() {
+        drawMode = false;
+        startLatLng = null;
+        startButton.disabled = false;
+        map.dragging.enable();
+        map.doubleClickZoom.enable();
+        map.getContainer().style.cursor = '';
+      }
+
+      function clearRectangle() {
+        if (rectangle) {
+          map.removeLayer(rectangle);
+          rectangle = null;
+        }
+        output.value = '';
+        sendButton.disabled = true;
+      }
+
+      function updateOutputFromBounds(bounds) {
+        const west = bounds.getWest();
+        const south = bounds.getSouth();
+        const east = bounds.getEast();
+        const north = bounds.getNorth();
+
+        const polygon = {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [west, south],
+              [east, south],
+              [east, north],
+              [west, north],
+              [west, south],
+            ],
+          ],
+        };
+
+        output.value = JSON.stringify(polygon, null, 2);
+        sendButton.disabled = false;
+      }
+
+      map.on('mousedown', (event) => {
+        if (!drawMode) return;
+
+        startLatLng = event.latlng;
+
+        if (rectangle) {
+          map.removeLayer(rectangle);
+          rectangle = null;
+        }
+      });
+
+      map.on('mousemove', (event) => {
+        if (!drawMode || !startLatLng) return;
+
+        const bounds = L.latLngBounds(startLatLng, event.latlng);
+
+        if (!rectangle) {
+          rectangle = L.rectangle(bounds, { color: '#143467', weight: 2 });
+          rectangle.addTo(map);
+        } else {
+          rectangle.setBounds(bounds);
+        }
+      });
+
+      map.on('mouseup', () => {
+        if (!drawMode || !rectangle) return;
+
+        disableDrawing();
+        updateOutputFromBounds(rectangle.getBounds());
+      });
+
+      startButton.addEventListener('click', enableDrawing);
+
+      clearButton.addEventListener('click', () => {
+        clearRectangle();
+        disableDrawing();
+      });
+
+      sendButton.addEventListener('click', () => {
+        if (!rectangle) return;
+
+        const bounds = rectangle.getBounds();
+        const payload = {
+          type: 'bbox',
+          west: bounds.getWest(),
+          south: bounds.getSouth(),
+          east: bounds.getEast(),
+          north: bounds.getNorth(),
+          geojson: JSON.parse(output.value || '{}'),
+        };
+
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({
+            source: 'dcat-bbox-selector',
+            payload,
+          }, '*');
+        }
+      });
+
+      window.addEventListener('beforeunload', () => {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({
+            source: 'dcat-bbox-selector',
+            payload: { type: 'closed' },
+          }, '*');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

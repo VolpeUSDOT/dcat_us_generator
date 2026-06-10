@@ -1,4 +1,4 @@
-# README for DCAT-US Dual-Mode Generator
+# README for DCAT-US Generator
 <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" height="28"> <img src="https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E" alt="JavaScript" height="28"> <img src="https://img.shields.io/badge/json-000000?style=for-the-badge&logo=json&logoColor=white" alt="JSON" height="28"> <a href="https://creativecommons.org/licenses/by/4.0"><img src="https://licensebuttons.net/l/by/3.0/88x31.png" alt="Creative Commons 4.0 BY License" height="28"></a>
 
 National Transportation Library (NTL). Bureau of Transportation Statistics (BTS), U.S. Department of Transportation (USDOT). [ROR ID: https://ror.org/00snbrd52](https://ror.org/00snbrd52)  
@@ -14,7 +14,7 @@ C. [Data and Related Files Overview](#c-data-and-related-files-overview)
 D. [LibGuide Implementation Information](#d-libguide-implementation-information)  
 E. [Update Log](#e-update-log)  
 
-**Title of Dataset:**  DCAT-US Dual-Mode Metadata Generator
+**Title of Dataset:**  DCAT-US Metadata Generator
 
 **Description of the Project:** This project now supports generating JSON for both DCAT-US version 1.1 and DCAT-US 3.0, with DCAT-US 3.0 as the default output. A dual-mode HTML form plus JavaScript serializer pipeline helps researchers, data managers, data curators, and developers produce metadata compliant with either profile. A canonical internal model powers profile-specific serializers, and inline UI hints explain requirements that differ between versions.
 
